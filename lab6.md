@@ -1,7 +1,7 @@
 https://github.com/rcos/CSCI-4470-OpenSource/blob/master/Modules/06.ScientificComputing/Lab-ScientificComputing.md
 
 
-1. Testing additional words:
+## Question 1: Testing additional words:
 
 (Only had to change main). 
 
