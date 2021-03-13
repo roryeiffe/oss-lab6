@@ -128,7 +128,7 @@ def words_graph():
 
 if __name__ == '__main__':
     G = words_graph()
-    print("Loaded words_dat.txt containing 5757 five-letter English words.")
+    print("Loaded words4_dat.txt containing 2174 four-letter English words.")
     print("Two words are connected if they differ in one letter.")
     print("Graph has %d nodes with %d edges"
           % (nx.number_of_nodes(G), nx.number_of_edges(G)))
@@ -151,7 +151,7 @@ if __name__ == '__main__':
 ### Output:
 
 ```
-Loaded words4_dat.txt containing 5757 five-letter English words.
+Loaded words4_dat.txt containing 2174 four-letter English words.
 Two words are connected if they differ in one letter.
 Graph has 2174 nodes with 8040 edges
 129 connected components
@@ -176,4 +176,123 @@ beef
 Shortest path between make and take is
 make
 take
+```
+
+## Question 3: Unordered
+
+### Code:
+```python
+def generate_graph(words):
+    G = nx.Graph(name="words")
+    lookup = dict((c, lowercase.index(c)) for c in lowercase)
+
+    def edit_distance_one(word):
+        # iterate through word:
+        for i in range(len(word)):
+            # extract out the current character
+            c = word[i]
+            # get the index of the current character (a -> 0, b -> 1, etc...)
+            j = lookup[c]  # lowercase.index(c)
+            # make a set of all characters in word:
+            word_set = set(word)
+            # loop through every letter that comes after this current letter
+            for cc in lowercase[j + 1:]:
+                new_word = word + cc
+                # find all permutations of this word and the additional letter:
+                perms = itertools.permutations(new_word,5)
+                for item in perms:
+                    # only if we have a different letter:
+                    if item != word_set:
+                        # Yield this permutation:
+                        perm = "".join(item)
+                        yield perm
+        
+    candgen = ((word, cand) for word in sorted(words)
+               for cand in edit_distance_one(word) if cand in words)
+    G.add_nodes_from(words)
+    for word, cand in candgen:
+        G.add_edge(word, cand)
+    return G
+
+
+def words_graph():
+    """Return the words example graph from the Stanford GraphBase"""
+    fh = gzip.open('words_dat.txt.gz', 'r')
+    words = set()
+    for line in fh.readlines():
+        line = line.decode()
+        if line.startswith('*'):
+            continue
+        w = str(line[0:5])
+        words.add(w)
+    return generate_graph(words)
+
+
+if __name__ == '__main__':
+    print("started")
+    G = words_graph()
+    print("Loaded words_dat.txt containing 5757 five-letter English words.")
+    print("Two words are connected if they differ in one letter.")
+    print("Graph has %d nodes with %d edges"
+          % (nx.number_of_nodes(G), nx.number_of_edges(G)))
+    print("%d connected components" % nx.number_connected_components(G))
+
+    for (source, target) in [('chaos', 'order'),
+                             ('nodes', 'graph'),
+                             ('moron', 'smart'),
+                             ('files', 'swims'),
+                             ('mango', 'peach'),
+                             ('pound', 'marks')]:
+        print("Shortest path between %s and %s is" % (source, target))
+        try:
+            sp = nx.shortest_path(G, source, target)
+            for n in sp:
+                print(n)
+        except nx.NetworkXNoPath:
+            print("None")
+```
+
+### Output:
+```
+started
+Loaded words_dat.txt containing 5757 five-letter English words.
+Two words are connected if they differ in one letter.
+Graph has 5757 nodes with 119845 edges
+16 connected components
+Shortest path between chaos and order is
+chaos
+codas
+codes
+coder
+order
+Shortest path between nodes and graph is
+nodes
+anode
+agone
+anger
+gaper
+graph
+Shortest path between moron and smart is
+moron
+manor
+roams
+smart
+Shortest path between files and swims is
+files
+isles
+semis
+swims
+Shortest path between mango and peach is
+mango
+agone
+canoe
+pecan
+peach
+Shortest path between pound and marks is
+pound
+mound
+modus
+dorms
+drams
+marks
 ```
