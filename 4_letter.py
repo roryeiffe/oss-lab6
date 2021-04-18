@@ -1,5 +1,5 @@
 """
-UNORDERED SOLUTION
+4 LETTER WORDS:
 =====
 Words
 =====
@@ -31,7 +31,6 @@ import gzip
 from string import ascii_lowercase as lowercase
 
 import networkx as nx
-import itertools
 
 #-------------------------------------------------------------------
 #   The Words/Ladder graph of Section 1.1
@@ -43,26 +42,11 @@ def generate_graph(words):
     lookup = dict((c, lowercase.index(c)) for c in lowercase)
 
     def edit_distance_one(word):
-        # iterate through word:
         for i in range(len(word)):
-            # extract out the current character
-            c = word[i]
-            # get the index of the current character (a -> 0, b -> 1, etc...)
+            left, c, right = word[0:i], word[i], word[i + 1:]
             j = lookup[c]  # lowercase.index(c)
-            # make a set of all characters in word:
-            word_set = set(word)
-            # loop through every letter that comes after this current letter
             for cc in lowercase[j + 1:]:
-                new_word = word + cc
-                # find all permutations of this word and the additional letter:
-                perms = itertools.permutations(new_word,5)
-                for item in perms:
-                    # only if we have a different letter:
-                    if item != word_set:
-                        # Yield this permutation:
-                        perm = "".join(item)
-                        yield perm
-        
+                yield left + cc + right
     candgen = ((word, cand) for word in sorted(words)
                for cand in edit_distance_one(word) if cand in words)
     G.add_nodes_from(words)
@@ -73,32 +57,30 @@ def generate_graph(words):
 
 def words_graph():
     """Return the words example graph from the Stanford GraphBase"""
-    fh = gzip.open('words_dat.txt.gz', 'r')
+    fh = gzip.open('words4_dat.txt.gz', 'r')
     words = set()
     for line in fh.readlines():
         line = line.decode()
         if line.startswith('*'):
             continue
-        w = str(line[0:5])
+        w = str(line[0:4])
         words.add(w)
     return generate_graph(words)
 
 
 if __name__ == '__main__':
-    print("started")
     G = words_graph()
-    print("Loaded words_dat.txt containing 5757 five-letter English words.")
+    print("Loaded words4_dat.txt containing 2174 four-letter English words.")
     print("Two words are connected if they differ in one letter.")
     print("Graph has %d nodes with %d edges"
           % (nx.number_of_nodes(G), nx.number_of_edges(G)))
     print("%d connected components" % nx.number_connected_components(G))
 
-    for (source, target) in [('chaos', 'order'),
-                             ('nodes', 'graph'),
-                             ('moron', 'smart'),
-                             ('files', 'swims'),
-                             ('mango', 'peach'),
-                             ('pound', 'marks')]:
+    for (source, target) in [('cold', 'warm'),
+                             ('love', 'hate'),
+                             ('good', 'evil'),
+                            ('pear','beef'),
+                             ('make','take')]:
         print("Shortest path between %s and %s is" % (source, target))
         try:
             sp = nx.shortest_path(G, source, target)
